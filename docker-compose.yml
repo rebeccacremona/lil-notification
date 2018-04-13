@@ -1,0 +1,31 @@
+version: '2'
+
+services:
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data:delegated
+  db:
+    image: postgres:9.6.2
+    volumes:
+      # NAMED VOLUMES
+      - db_data:/var/lib/postgresql/data
+      # BIND MOUNTS
+  web:
+    build: ./lil-notification
+    image: lil-notification:0.1
+    tty: true
+    command: bash
+    volumes:
+      # NAMED VOLUMES
+      # BIND MOUNTS
+      - ./lil-notification:/lil-notification/lil-notification
+      - ./services/logs:/lil-notification/services/logs:delegated
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  redis_data:

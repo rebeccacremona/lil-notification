@@ -1,0 +1,12 @@
+# After updating this file, run `pip-compile` to update requirements.txt.
+
+psycopg2-binary            # postgres connector
+
+# Django stuff
+Django
+channels
+whitenoise
+
+# Admin stuff
+pip-tools                  # freeze requirements.txt
+Fabric3                    # project automation
