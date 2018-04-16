@@ -5,8 +5,13 @@ psycopg2-binary            # postgres connector
 # Django stuff
 Django
 channels
+channels_redis
 whitenoise
 
 # Admin stuff
 pip-tools                  # freeze requirements.txt
 Fabric3                    # project automation
+
+# Testing
+pytest-django               # testing
+flake8                      # code linting
