@@ -1,7 +1,8 @@
+import json
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from channels.exceptions import DenyConnection
-import json
 
 from .models import Application, ACTIVE_STATUSES
 
@@ -26,10 +27,9 @@ class ChatConsumer(WebsocketConsumer):
         # Signal right away if a maintenance event is active
         active =  application.maintenance_events.filter(status__in=ACTIVE_STATUSES)
         if active:
-            self.send(text_data=json.dumps({
-                'message': 'a maintenance message is active!',
-                'active': True,
-            }))
+            # There should only be one active at a time,
+            # but don't be strict here
+            self.send(text_data=json.dumps(active[0].get_details_for_ws()))
 
 
     def disconnect(self, close_code):
@@ -38,21 +38,26 @@ class ChatConsumer(WebsocketConsumer):
             self.channel_name
         )
 
-    # Receive message from WebSocket
+
     def receive(self, text_data):
+        '''
+        Handle message sent by a connected WebSocket
+        (This is only used for by the "send test message" UI.)
+        '''
         text_data_json = json.loads(text_data)
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {
                 'type': 'maintenance_msg',
-                'message': text_data_json['message'],
-                'active': text_data_json.get('active', False)
+                'active': text_data_json.get('active', False),
+                'status': text_data_json.get('status', None),
+                'details': text_data_json.get('details', None),
             }
         )
 
-    # Receive message from group
+
     def maintenance_msg(self, event):
-        self.send(text_data=json.dumps({
-            'message': event['message'],
-            'active': event['active']
-        }))
+        '''
+        Forward messages broadcasted to the group on to the WebSocket
+        '''
+        self.send(text_data=json.dumps(event))

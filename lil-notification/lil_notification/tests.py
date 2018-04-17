@@ -1,6 +1,7 @@
-import pytest
-
+import logging
 from django.core.exceptions import ValidationError
+
+import pytest
 
 from .models import Application, MaintenanceEvent, ACTIVE_STATUSES
 
@@ -103,3 +104,17 @@ def test_can_update_own_status(unsaved_event_for_app):
     e.refresh_from_db()
     assert e.status == 'in_progress'
 
+
+@pytest.mark.django_db
+def test_group_notified_on_save(caplog, unsaved_event_for_app):
+    caplog.set_level(logging.INFO)
+    e = unsaved_event_for_app.get()
+    e.full_clean()
+    e.save()
+
+    assert len(caplog.records) == 2
+    for record in caplog.records:
+        assert record.levelname == 'INFO'
+        assert record.name == 'lil_notification.models'
+    assert "Notifying perma prod about MaintenanceEvent" in caplog.records[0].msg
+    assert "Notified perma prod about MaintenanceEvent" in caplog.records[1].msg

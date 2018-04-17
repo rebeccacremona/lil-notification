@@ -1,6 +1,14 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.functional import cached_property
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 ACTIVE_STATUSES = [
@@ -78,3 +86,23 @@ class MaintenanceEvent(models.Model):
     def is_active(self):
         return self.status in ACTIVE_STATUSES
 
+
+    def get_details_for_ws(self):
+        return {
+            'active': self.is_active(),
+            'status': self.status,
+            'details': {
+                'scheduled_start': self.scheduled_start,
+                'scheduled_end': self.scheduled_end
+            }
+        }
+
+
+@receiver(post_save, sender=MaintenanceEvent)
+def notify_groups(sender, instance=None, created=False, **kwargs):
+    logger.info('Notifying {} about {}'.format(instance.application.name, instance))
+    group = 'maintenance_{}_{}'.format(instance.application.slug, instance.application.tier)
+    data = {'type': 'maintenance_msg'}
+    data.update(instance.get_details_for_ws())
+    async_to_sync(get_channel_layer().group_send)(group, data)
+    logger.info('Notified {} about {}'.format(instance.application.name, instance))

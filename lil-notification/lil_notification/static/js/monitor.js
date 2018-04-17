@@ -7,12 +7,13 @@ const socket = new ReconnectingWebSocket(
     `${ws_scheme}://${window.location.host}/ws/${app}/${tier}`
 );
 
+
 socket.onmessage = function(e) {
     let data = JSON.parse(e.data);
-    let message = data['message'];
+    console.log(data);
     if (data['active']){
         wrapper.classList.add('active');
-        container.innerHTML = `<p>${message}</p>`;
+        container.innerHTML = `<p>${data['status']}</p>`;
     } else {
         wrapper.classList.remove('active');
         container.innerHTML = '';
@@ -25,7 +26,8 @@ socket.onclose = function(e) {
 
 testMessaging.onclick = function(e) {
     socket.send(JSON.stringify({
-        'message': `Alert! Test message sent at ${(new Date()).toLocaleTimeString('en-US')}`,
-        'active': true
+        'active': true,
+        'status': `Alert! Test message sent at ${(new Date()).toLocaleTimeString('en-US')}`,
+        'details': {}
     }));
 };
