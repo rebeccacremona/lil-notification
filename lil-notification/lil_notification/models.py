@@ -29,7 +29,11 @@ class Application(models.Model):
 
 class MaintenanceEvent(models.Model):
     # required fields
-    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='maintenance_events'
+    )
     status = models.CharField(
         max_length=50,
         default='imminent',

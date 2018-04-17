@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app | title }} {{ tier | title }} Maintenance Monitor</title>
+    <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/static/css/normalize.css">
+    <link rel="stylesheet" href="/static/css/skeleton.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+</head>
+<body>
+    <div id="alert-wrapper">
+        <div id="alert-container" role="alert" class="container">
+        </div>
+    </div>
+    <main class="container">
+        <header>
+            <h1>{{ app | title }} {{ tier | title }} Maintenance Monitor</h1>
+        </header>
+        <button id="test-messaging" type="button" class="button-primary">Send Test Message</button>
+    </main>
+
+    <script src="/static/js/reconnecting-websocket.min.js"></script>
+    <script>
+        const app = {{ app_json }};
+        const tier = {{ tier_json }};
+    </script>
+    <script src="/static/js/monitor.js"></script>
+</body>
+</html>
