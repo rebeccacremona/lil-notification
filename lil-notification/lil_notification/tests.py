@@ -18,7 +18,7 @@ def application():
 
 
 @pytest.fixture()
-def unsaved_event_for_app(request, application):
+def unsaved_event_for_app(application):
     class Factory(object):
         def get(self):
             return MaintenanceEvent(application=application)
@@ -87,4 +87,19 @@ def test_new_event_after_completed_event(unsaved_event_for_app):
     e2.save()
 
     assert e1.application is e2.application
+
+
+@pytest.mark.django_db
+def test_can_update_own_status(unsaved_event_for_app):
+    e = unsaved_event_for_app.get()
+    e.full_clean()
+    e.save()
+    e.refresh_from_db()
+    assert e.status == 'imminent'
+
+    e.status = 'in_progress'
+    e.full_clean()
+    e.save()
+    e.refresh_from_db()
+    assert e.status == 'in_progress'
 
