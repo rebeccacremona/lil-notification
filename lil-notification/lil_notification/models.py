@@ -91,10 +91,8 @@ class MaintenanceEvent(models.Model):
         return {
             'active': self.is_active(),
             'status': self.status,
-            'details': {
-                'scheduled_start': self.scheduled_start,
-                'scheduled_end': self.scheduled_end
-            }
+            'scheduled_start': self.scheduled_start.strftime('%c %Z') if self.scheduled_start else None,
+            'scheduled_end': self.scheduled_end.strftime('%c %Z') if self.scheduled_end else None,
         }
 
 

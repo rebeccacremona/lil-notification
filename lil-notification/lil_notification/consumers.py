@@ -50,8 +50,7 @@ class ChatConsumer(WebsocketConsumer):
             {
                 'type': 'maintenance_msg',
                 'active': text_data_json.get('active', False),
-                'status': text_data_json.get('status', None),
-                'details': text_data_json.get('details', None),
+                'status': text_data_json.get('status', None)
             }
         )
 
