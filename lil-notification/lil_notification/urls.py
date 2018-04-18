@@ -1,8 +1,23 @@
+from rest_framework.routers import APIRootView
+
 from django.urls import path
 
 from . import views
 
+# list views that should appear in the HTML version of the API root
+root_view = APIRootView.as_view(api_root_dict={
+    'applications': 'applications',
+    'maintenance_events': 'maintenance_events'
+})
+
+
 urlpatterns = [
-    # url(r'^$', views.index, name='index'),
+    # url(r'^$', views.index, name='index')
+    path('api/', root_view),
+    path('api/applications/', views.ApplicationListView.as_view(), name='applications'),
+    path('api/applications/<int:pk>/', views.ApplicationDetailView.as_view(), name='applications_detail'),
+    path('api/applications/<int:pk>/maintenance-events/', views.ApplicationMaintenanceEventListView.as_view(), name='applications_events'),
+    path('api/maintenance-events/', views.MaintenanceEventListView.as_view(), name='maintenance_events'),
+    path('api/maintenance-events/<int:pk>/', views.MaintenanceEventDetailView.as_view(), name='maintenance_events_detail'),
     path('<app>/<tier>', views.maintenance_monitor, name='maintenance_monitor')
 ]

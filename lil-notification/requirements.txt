@@ -19,8 +19,10 @@ click==6.7                # via pip-tools
 constantly==15.1.0        # via twisted
 cryptography==2.2.2       # via paramiko
 daphne==2.1.0             # via channels
+django-filter==1.1.0
 django-simple-history==2.0
 django==2.0.4
+djangorestframework==3.8.2
 fabric3==1.14.post1
 first==2.0.1              # via pip-tools
 flake8==3.5.0

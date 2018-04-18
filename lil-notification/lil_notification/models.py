@@ -22,8 +22,6 @@ class Application(models.Model):
     # required fields
     slug = models.SlugField()
     tier = models.CharField(max_length=50)
-    # optional fields
-    full_name = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         unique_together = ('slug', 'tier')

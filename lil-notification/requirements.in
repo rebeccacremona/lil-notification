@@ -4,6 +4,8 @@ psycopg2-binary            # postgres connector
 
 # Django stuff
 Django
+djangorestframework        # api
+django-filter              # filtering in the api
 django-simple-history      # tracks changes made to model instances
 channels                   # websockets
 channels_redis             # websockets helper
