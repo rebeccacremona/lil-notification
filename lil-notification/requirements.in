@@ -4,14 +4,15 @@ psycopg2-binary            # postgres connector
 
 # Django stuff
 Django
-channels
-channels_redis
-whitenoise
+django-simple-history      # tracks changes made to model instances
+channels                   # websockets
+channels_redis             # websockets helper
+whitenoise                 # something about static assets....
 
 # Admin stuff
 pip-tools                  # freeze requirements.txt
 Fabric3                    # project automation
 
 # Testing
-pytest-django               # testing
-flake8                      # code linting
+pytest-django              # testing
+flake8                     # code linting

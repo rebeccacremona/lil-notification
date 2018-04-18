@@ -1,5 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from simple_history.models import HistoricalRecords
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -46,10 +47,10 @@ class MaintenanceEvent(models.Model):
         max_length=50,
         default='imminent',
         choices=(
-            ('imminent', 'Pending: notify users downtime is imminent.'),
-            ('in_progress', 'In Progress: maintenance underway.'),
-            ('completed', 'Completed: maintenance completed.'),
-            ('canceled', 'Canceled: maintenance event did not take place.'),
+            ('imminent', 'imminent'),
+            ('in_progress', 'in_progress'),
+            ('completed', 'completed'),
+            ('canceled', 'canceled'),
         )
     )
     # optional fields
@@ -58,12 +59,12 @@ class MaintenanceEvent(models.Model):
     started = models.DateTimeField(blank=True, null=True)
     ended = models.DateTimeField(blank=True, null=True)
     reason =  models.TextField(blank=True, null=True)
-
+    history = HistoricalRecords()
 
     # Django methods
 
     def __str__(self):
-        return "MaintenanceEvent {}: {}".format(self.id, self.status)
+        return "{}: {}, {}".format(self.id, self.application.name, self.status)
 
 
     def clean(self):
@@ -73,7 +74,8 @@ class MaintenanceEvent(models.Model):
         # should not be able to create another one.
         already_active = self.__class__.objects.filter(status__in=ACTIVE_STATUSES)
         if already_active and \
-           (already_active.count() > 1 or already_active.get() != self):
+           (already_active.count() > 1 or \
+            already_active.get() != self and self.is_active()):
             raise ValidationError(
                 'There is already an active maintenance event for {}.'.format(
                     self.application.name

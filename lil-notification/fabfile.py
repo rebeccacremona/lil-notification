@@ -19,3 +19,13 @@ def run_django():
 @task
 def test():
     local("pytest --fail-on-template-vars")
+
+
+@task
+def init_db():
+    """
+        Set up new dev database.
+    """
+    local("python3 manage.py migrate")
+    from django.contrib.auth.models import User #noqa
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin')
