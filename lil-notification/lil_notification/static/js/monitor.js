@@ -1,6 +1,8 @@
 const wrapper = document.getElementById('alert-wrapper');
 const container = document.getElementById('alert-container');
 const testMessaging = document.getElementById('test-messaging');
+const cancelTestMessaging = document.getElementById('cancel-test-messaging');
+
 
 const scheme = window.location.protocol == "https:" ? "wss" : "ws";
 const socket = new ReconnectingWebSocket(
@@ -27,6 +29,13 @@ testMessaging.onclick = function(e) {
     socket.send(JSON.stringify({
         'active': true,
         'status': `Test message sent at ${(new Date()).toLocaleTimeString()}`,
+    }));
+};
+
+cancelTestMessaging.onclick = function(e) {
+    socket.send(JSON.stringify({
+        'active': false,
+        'status': `Test message canceled at ${(new Date()).toLocaleTimeString()}`,
     }));
 };
 
