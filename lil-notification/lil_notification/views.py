@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
@@ -42,7 +42,7 @@ def maintenance_monitor(request, app, tier):
 # all via https://github.com/harvard-lil/perma/blob/develop/perma_web/api/views.py#
 
 class BaseView(APIView):
-    permission_classes = (IsAuthenticated,)  # by default all users must be authenticated
+    permission_classes = (IsAdminUser,)  # by default all users must be authenticated
     serializer_class = None  # overridden for each subclass
 
     # configure filtering of list endpoints by query string
