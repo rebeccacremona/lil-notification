@@ -165,17 +165,11 @@ class ApplicationMaintenanceEventListView(BaseView):
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
     search_fields = ('reason')
 
-    def get_app(self, pk):
-        """ Helper to ensure pk in route points to a valid Application """
-        try:
-            app = Application.objects.get(id=pk)
-        except Application.DoesNotExist:
-            raise Http404
-        return app
-
     def get(self, request, pk, format=None):
         """ List maintenance events for app. """
-        queryset = MaintenanceEvent.objects.filter(application=self.get_app(pk))
+        queryset = MaintenanceEvent.objects.filter(
+            application=self.get_object_for_user_by_pk(request.user, pk).id
+        )
         return self.simple_list(request, queryset)
 
     def post(self, request, pk, format=None):
@@ -184,7 +178,7 @@ class ApplicationMaintenanceEventListView(BaseView):
         """
         # Get application id from route, not from request data.
         data = request.data.copy()
-        data['application'] = self.get_app(pk).id
+        data['application'] = self.get_object_for_user_by_pk(request.user, pk).id
         return self.simple_create(data)
 
 
