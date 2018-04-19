@@ -16,10 +16,8 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 
 from .models import Application, MaintenanceEvent
-from .serializers import (
-    ApplicationSerializer, MaintenanceEventSerializer,
-    MaintenanceEventWithApplicationSerializer
-)
+from .serializers import ApplicationSerializer, MaintenanceEventSerializer
+
 
 ###
 # Proof-of-Concept GUI
@@ -167,19 +165,32 @@ class ApplicationMaintenanceEventListView(BaseView):
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
     search_fields = ('reason')
 
-    def get(self, request, pk, format=None):
-        """ List maintenance events for app. """
+    def get_app(self, pk):
+        """ Helper to ensure pk in route points to a valid Application """
         try:
             app = Application.objects.get(id=pk)
         except Application.DoesNotExist:
             raise Http404
-        queryset = MaintenanceEvent.objects.filter(application=app)
+        return app
+
+    def get(self, request, pk, format=None):
+        """ List maintenance events for app. """
+        queryset = MaintenanceEvent.objects.filter(application=self.get_app(pk))
         return self.simple_list(request, queryset)
+
+    def post(self, request, pk, format=None):
+        """
+        Create new maintenance event for app.
+        """
+        # Get application id from route, not from request data.
+        data = request.data.copy()
+        data['application'] = self.get_app(pk).id
+        return self.simple_create(data)
 
 
 # /maintenance-events/
 class MaintenanceEventListView(BaseView):
-    serializer_class = MaintenanceEventWithApplicationSerializer
+    serializer_class = MaintenanceEventSerializer
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
     search_fields = ('reason')
 
@@ -191,7 +202,7 @@ class MaintenanceEventListView(BaseView):
 
 # /maintenance-events/:id
 class MaintenanceEventDetailView(BaseView):
-    serializer_class = MaintenanceEventWithApplicationSerializer
+    serializer_class = MaintenanceEventSerializer
 
     def get(self, request, pk, format=None):
         """ Single application details. """
