@@ -16,7 +16,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 
 from .models import Application, MaintenanceEvent
-from .serializers import ApplicationSerializer, MaintenanceEventSerializer
+from .serializers import ApplicationSerializer, MaintenanceEventSerializer, FullMaintenanceEventSerializer
 
 
 ###
@@ -190,7 +190,7 @@ class ApplicationMaintenanceEventListView(BaseView):
 
 # /maintenance-events/
 class MaintenanceEventListView(BaseView):
-    serializer_class = MaintenanceEventSerializer
+    serializer_class = FullMaintenanceEventSerializer
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
     search_fields = ('reason')
 
@@ -202,7 +202,7 @@ class MaintenanceEventListView(BaseView):
 
 # /maintenance-events/:id
 class MaintenanceEventDetailView(BaseView):
-    serializer_class = MaintenanceEventSerializer
+    serializer_class = FullMaintenanceEventSerializer
 
     def get(self, request, pk, format=None):
         """ Single application details. """

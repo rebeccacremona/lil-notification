@@ -50,8 +50,6 @@ class MaintenanceEventSerializer(BaseSerializer):
             'ended',
             'reason'
         ]
-        depth = 1
-
 
     def validate(self, attrs):
         """ Hack to avoid duplicating validation set up on the model."""
@@ -60,3 +58,8 @@ class MaintenanceEventSerializer(BaseSerializer):
         instance.full_clean()
         return attrs
 
+
+class FullMaintenanceEventSerializer(MaintenanceEventSerializer):
+
+    class Meta(MaintenanceEventSerializer.Meta):
+        depth = 1
