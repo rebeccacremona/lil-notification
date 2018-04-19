@@ -58,8 +58,3 @@ class MaintenanceEventSerializer(BaseSerializer):
         instance.full_clean()
         return attrs
 
-
-class FullMaintenanceEventSerializer(MaintenanceEventSerializer):
-
-    class Meta(MaintenanceEventSerializer.Meta):
-        depth = 1
