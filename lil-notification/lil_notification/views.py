@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
@@ -17,7 +17,8 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 
 from .models import Application, MaintenanceEvent
-from .serializers import ApplicationSerializer, MaintenanceEventSerializer
+from .serializers import ApplicationSerializer, MaintenanceEventSerializer, \
+    PublicMaintenanceEventSerializer
 
 
 ###
@@ -226,9 +227,10 @@ class ApplicationMaintenanceEventListView(BaseView):
 
 # /maintenance-events/
 class MaintenanceEventListView(BaseView):
-    serializer_class = MaintenanceEventSerializer
+    permission_classes = (AllowAny,) # Completely public view
+
+    serializer_class = PublicMaintenanceEventSerializer
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
-    search_fields = ('reason')
 
     def get(self, request, format=None):
         """ List maintenance events. """
