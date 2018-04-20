@@ -199,12 +199,14 @@ class MaintenanceEventDetailView(BaseView):
     serializer_class = MaintenanceEventSerializer
 
     def get(self, request, pk, format=None):
-        """ Single application details. """
+        """ Single maintenance event details. """
         return self.simple_get(request, pk)
 
     def patch(self, request, pk, format=None):
         """ Update  maintenance event. """
-        # Get application id from route, not from request data.
+        # Get id from route, not from request data.
         data = request.data.copy()
-        data['application'] = self.get_object_for_user_by_pk(request.user, pk).id
-        return self.simple_create(data)
+        obj = self.get_object_for_user_by_pk(request.user, pk)
+        # Pass id for validation purposes
+        data['id'] = obj.id
+        return self.simple_update(obj, data)

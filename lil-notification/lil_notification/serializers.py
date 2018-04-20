@@ -52,9 +52,27 @@ class MaintenanceEventSerializer(BaseSerializer):
         ]
 
     def validate(self, attrs):
-        """ Hack to avoid duplicating validation set up on the model."""
-        # http://www.django-rest-framework.org/topics/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
-        instance = MaintenanceEvent(**attrs)
-        instance.full_clean()
+        if MaintenanceEvent.invalid_active_status_for_pk(self.initial_data['id'], attrs['status']):
+            raise serializers.ValidationError('There is already an active maintenance event for this application.')
         return attrs
 
+
+class PublicMaintenanceEventSerializer(BaseSerializer):
+    """
+    Serializers with depth !=0 cause problems on POST/PUT/PATCH.
+    This serializer is safe for use with read-only views.
+    """
+    class Meta:
+        model = MaintenanceEvent
+        fields = [
+            'id',
+            'application',
+            'status',
+            'scheduled_start',
+            'scheduled_end',
+            'started',
+            'ended',
+            # We may not want to expose `reason`.
+            # 'reason'
+        ]
+        depth = 1

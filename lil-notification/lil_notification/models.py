@@ -68,16 +68,9 @@ class MaintenanceEvent(models.Model):
     def __str__(self):
         return "{}: {}, {}".format(self.id, self.application.name, self.status)
 
-
     def clean(self):
         super(MaintenanceEvent, self).clean()
-        # We should be able to update the statuses of active events,
-        # but if a different active event already exists, we
-        # should not be able to create another one.
-        already_active = self.__class__.objects.filter(status__in=ACTIVE_STATUSES)
-        if already_active and \
-           (already_active.count() > 1 or \
-            already_active.get() != self and self.is_active()):
+        if MaintenanceEvent.invalid_active_status_for_pk(self.id, self.status):
             raise ValidationError(
                 'There is already an active maintenance event for {}.'.format(
                     self.application.name
@@ -87,9 +80,20 @@ class MaintenanceEvent(models.Model):
 
     # Custom methods
 
+    @classmethod
+    def invalid_active_status_for_pk(cls, pk, status):
+        # We should be able to update the statuses of active events,
+        # but if a different active event already exists, we
+        # should not be able to create another one.
+        already_active = cls.objects.filter(status__in=ACTIVE_STATUSES)
+        return already_active.count() > 1 or (
+            already_active and \
+            already_active.get().id != pk and \
+            status in ACTIVE_STATUSES
+        )
+
     def is_active(self):
         return self.status in ACTIVE_STATUSES
-
 
     def get_details_for_ws(self):
         return {
