@@ -1,5 +1,6 @@
 from rest_framework.authentication import TokenAuthentication as DRFTokenAuthentication
 
+from django.conf import settings
 
 class TokenAuthentication(DRFTokenAuthentication):
     """
@@ -9,9 +10,10 @@ class TokenAuthentication(DRFTokenAuthentication):
 
     def authenticate(self, request):
         """
-            Try getting api_key from get/post param before using Authorization header.
+            Locally, try getting api_key from get/post param before using Authorization header.
         """
-        api_key = request.POST.get('api_key') or request.query_params.get('api_key')
-        if api_key:
-            return self.authenticate_credentials(api_key)
+        if settings.DEBUG:
+            api_key = request.POST.get('api_key') or request.query_params.get('api_key')
+            if api_key:
+                return self.authenticate_credentials(api_key)
         return super(TokenAuthentication, self).authenticate(request)
