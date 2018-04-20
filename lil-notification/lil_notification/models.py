@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 
@@ -102,12 +102,22 @@ class MaintenanceEvent(models.Model):
 
 @receiver(post_save, sender=MaintenanceEvent)
 def notify_groups(sender, instance=None, created=False, **kwargs):
-    logger.info('Notifying {} about {}'.format(instance.application.name, instance))
-    group = 'maintenance_{}_{}'.format(instance.application.slug, instance.application.tier)
-    data = {'type': 'maintenance_msg'}
-    data.update(instance.get_details_for_ws())
-    async_to_sync(get_channel_layer().group_send)(group, data)
-    logger.info('Notified {} about {}'.format(instance.application.name, instance))
+    if instance:
+        logger.info('Notifying {} about MaintenanceEvent {}'.format(instance.application.name, instance))
+        group = 'maintenance_{}_{}'.format(instance.application.slug, instance.application.tier)
+        data = {'type': 'maintenance_msg'}
+        data.update(instance.get_details_for_ws())
+        async_to_sync(get_channel_layer().group_send)(group, data)
+        logger.info('Notified {} about MaintenanceEvent {}'.format(instance.application.name, instance))
+
+
+@receiver(pre_delete, sender=MaintenanceEvent)
+def notify_groups_on_relevant_delete(sender, instance=None, **kwargs):
+    if instance:
+        logger.info('Pending deletion of MaintenanceEvent {}'.format(instance))
+        if instance.is_active():
+            instance.status = 'canceled'
+            instance.save()
 
 
 # Create API tokens for new users

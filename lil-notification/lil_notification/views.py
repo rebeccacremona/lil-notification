@@ -194,7 +194,7 @@ class MaintenanceEventListView(BaseView):
         return self.simple_list(request, queryset)
 
 
-# /maintenance-events/:id
+# /maintenance-events/:id/
 class MaintenanceEventDetailView(BaseView):
     serializer_class = MaintenanceEventSerializer
 

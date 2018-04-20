@@ -118,3 +118,41 @@ def test_group_notified_on_save(caplog, unsaved_event_for_app):
         assert record.name == 'lil_notification.models'
     assert "Notifying perma prod about MaintenanceEvent" in caplog.records[0].msg
     assert "Notified perma prod about MaintenanceEvent" in caplog.records[1].msg
+
+
+@pytest.mark.django_db
+def test_group_notified_on_deletion_of_active(caplog, unsaved_event_for_app):
+    caplog.set_level(logging.INFO)
+    e = unsaved_event_for_app.get()
+    e.full_clean()
+    e.save()
+    caplog.clear()
+
+    e.delete()
+    assert not e.id
+    assert len(caplog.records) == 3
+    for record in caplog.records:
+        assert record.levelname == 'INFO'
+        assert record.name == 'lil_notification.models'
+    assert "Pending deletion of MaintenanceEvent" in caplog.records[0].msg
+    assert "Notifying perma prod about MaintenanceEvent" in caplog.records[1].msg
+    assert "Notified perma prod about MaintenanceEvent" in caplog.records[2].msg
+
+
+
+@pytest.mark.django_db
+def test_group_not_notified_on_deletion_of_inactive(caplog, unsaved_event_for_app):
+    caplog.set_level(logging.INFO)
+    e = unsaved_event_for_app.get()
+    e.status = 'completed'
+    e.full_clean()
+    e.save()
+    caplog.clear()
+
+    e.delete()
+    assert not e.id
+    assert len(caplog.records) == 1
+    for record in caplog.records:
+        assert record.levelname == 'INFO'
+        assert record.name == 'lil_notification.models'
+    assert "Pending deletion of MaintenanceEvent" in caplog.records[0].msg
