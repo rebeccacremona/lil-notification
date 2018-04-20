@@ -89,7 +89,7 @@ class MaintenanceEvent(models.Model):
         return already_active.count() > 1 or (
             already_active and \
             already_active.get().id != pk and \
-            status in ACTIVE_STATUSES
+            (status in ACTIVE_STATUSES or not status)
         )
 
     def is_active(self):

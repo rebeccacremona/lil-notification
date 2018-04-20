@@ -52,7 +52,7 @@ class MaintenanceEventSerializer(BaseSerializer):
         ]
 
     def validate(self, attrs):
-        if MaintenanceEvent.invalid_active_status_for_pk(self.initial_data['id'], attrs['status']):
+        if MaintenanceEvent.invalid_active_status_for_pk(self.initial_data.get('id'), attrs.get('status')):
             raise serializers.ValidationError('There is already an active maintenance event for this application.')
         return attrs
 

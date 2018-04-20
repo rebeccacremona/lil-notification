@@ -1,3 +1,4 @@
+from functools import wraps
 import json
 
 from rest_framework import status
@@ -35,7 +36,45 @@ def maintenance_monitor(request, app, tier):
 
 ###
 # API
+#
+# All taken or adapted from
+# https://github.com/harvard-lil/perma/blob/develop/perma_web/api
 ###
+
+
+### Utils
+
+parent_classes = {
+    'applications': Application,
+}
+def load_parent(func):
+    """
+    Decorator to set request.parent for nested views. For example, if we have
+        /applications/1/maintenance-events/
+    And
+        class ApplicationMaintenanceEventListView():
+            @load_parent
+            def get(request, parent_id):
+                ...
+    This decorator will make sure that request.parent is set to Application(pk=1).
+    For this to work, "applications" should be captured as parent_type in the urlconf, and "1" should be captured as parent_id.
+    """
+    @wraps(func)
+    def func_wrapper(self, request, *args, **kwargs):
+        parent_type = kwargs.pop('parent_type', None)
+        parent_id = kwargs.pop('parent_id', None)
+
+        if parent_type:
+            ParentClass = parent_classes[parent_type]
+            try:
+                request.parent = ParentClass.objects.get(id=parent_id)
+            except ParentClass.DoesNotExist:
+                raise Http404
+        else:
+            request.parent = None
+
+        return func(self, request, *args, **kwargs)
+    return func_wrapper
 
 
 ### BASE VIEW ###
@@ -165,20 +204,23 @@ class ApplicationMaintenanceEventListView(BaseView):
     ordering_fields = ('scheduled_start', 'scheduled_end', 'started', 'ended')
     search_fields = ('reason')
 
-    def get(self, request, pk, format=None):
+
+    @load_parent
+    def get(self, request, format=None):
         """ List maintenance events for app. """
         queryset = MaintenanceEvent.objects.filter(
-            application=self.get_object_for_user_by_pk(request.user, pk).id
+            application=request.parent.id
         )
         return self.simple_list(request, queryset)
 
-    def post(self, request, pk, format=None):
+    @load_parent
+    def post(self, request, format=None):
         """
         Create new maintenance event for app.
         """
-        # Get application id from route, not from request data.
+        # Get app id from route, not from request data.
         data = request.data.copy()
-        data['application'] = self.get_object_for_user_by_pk(request.user, pk).id
+        data['application'] = request.parent.id
         return self.simple_create(data)
 
 
