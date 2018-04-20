@@ -16,7 +16,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
 @admin.register(MaintenanceEvent)
 class MaintenanceEventAdmin(SimpleHistoryAdmin):
-    list_display = ('get_app', 'get_tier', 'status', 'scheduled_start','scheduled_end','started','ended')
+    list_display = ('id', 'get_app', 'get_tier', 'status', 'scheduled_start','scheduled_end','started','ended')
     list_filter = ('application__slug', 'application__tier', 'status', 'scheduled_start','scheduled_end','started','ended')
     search_fields = ('application__slug', 'application__tier', 'status', )
 
